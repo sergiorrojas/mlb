@@ -1,4 +1,4 @@
-package com.sergiroj.mlb.dto.response.service;
+package com.sergiroj.mlb.dto.request.service;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class TeamResponse {
-    private String id;
+public class UpdatePlayerRequest {
     private String name;
 }

@@ -72,7 +72,7 @@ public class TeamServiceImpl implements TeamService {
         }
         else{
             Team team = optionalTeam.get();
-            BeanUtils.copyProperties(updateTeamRequest, team);
+            team.setName(updateTeamRequest.getName());
             teamRepository.save(team);
             return true;
         }

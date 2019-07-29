@@ -40,7 +40,7 @@ public class TeamController {
     public ResponseEntity<BaseWebResponse> updateTeam(
             @PathVariable(value = "teamId") String teamId,
             @RequestBody UpdateTeamRequest updateTeamRequest){
-        if(teamService.updateTeam(updateTeamRequest)){
+if(teamService.updateTeam(updateTeamRequest)){
             return ResponseEntity.ok(BaseWebResponse.successNoData());
         }
         else{
