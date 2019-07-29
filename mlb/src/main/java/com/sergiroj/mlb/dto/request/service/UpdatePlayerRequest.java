@@ -1,5 +1,6 @@
 package com.sergiroj.mlb.dto.request.service;
 
+import com.sergiroj.mlb.entity.Team;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,5 +11,8 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class UpdatePlayerRequest {
-    private String name;
+    private String id;
+    private String firstName;
+    private String lastName;
+    private Team team;
 }
