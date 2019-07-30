@@ -3,7 +3,6 @@ package com.sergiroj.mlb.service;
 import com.sergiroj.mlb.dto.request.service.CreateTeamRequest;
 import com.sergiroj.mlb.dto.request.service.UpdateTeamRequest;
 import com.sergiroj.mlb.dto.response.service.TeamResponse;
-import rx.Single;
 
 import java.util.List;
 

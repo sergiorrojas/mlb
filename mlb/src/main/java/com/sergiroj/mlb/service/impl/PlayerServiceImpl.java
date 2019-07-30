@@ -2,6 +2,7 @@ package com.sergiroj.mlb.service.impl;
 
 import com.sergiroj.mlb.dto.request.service.CreatePlayerRequest;
 import com.sergiroj.mlb.dto.request.service.UpdatePlayerRequest;
+import com.sergiroj.mlb.dto.request.service.UpdateTeamRequest;
 import com.sergiroj.mlb.dto.response.service.PlayerResponse;
 import com.sergiroj.mlb.entity.Player;
 import com.sergiroj.mlb.repository.PlayerRepository;
@@ -13,9 +14,12 @@ import rx.Completable;
 import rx.Observable;
 import rx.Single;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class PlayerServiceImpl implements PlayerService {
@@ -24,42 +28,65 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     public String createPlayer(CreatePlayerRequest createPlayerRequest) {
-        return null;
+        return savePlayer(createPlayerRequest);
     }
 
     @Override
     public Single<String> createPlayerV2(CreatePlayerRequest createPlayerRequest) {
-        return null;
+        return Single.create(subscriber -> {
+            String playerId = savePlayer(createPlayerRequest);
+            subscriber.onSuccess(playerId);
+        });
     }
 
     @Override
     public List<PlayerResponse> getAllPlayers() {
-        return null;
+        return findAllPlayers().stream()
+                .map(this::convertToPlayerResponse)
+                .collect(Collectors.toList());
     }
 
     @Override
     public Single<List<PlayerResponse>> getAllPlayersV2() {
-        return null;
+        return Single.create(subscriber -> {
+            List<PlayerResponse> players = findAllPlayers()
+                    .stream()
+                    .map(this::convertToPlayerResponse)
+                    .collect(Collectors.toList());
+            subscriber.onSuccess(players);
+        });
     }
 
     @Override
     public Observable<List<PlayerResponse>> getAllPlayersV3() {
-        return null;
+        return Observable.create(observer -> {
+            List<PlayerResponse> players = findAllPlayers()
+                    .stream()
+                    .map(this::convertToPlayerResponse)
+                    .collect(Collectors.toList());
+            observer.onNext(players);
+            observer.onCompleted();
+        });
     }
 
     @Override
     public Single<PlayerResponse> getPlayerDetailsV2(String id) {
-        return null;
+        return findPlayerDetails(id);
+    }
+
+    @Override
+    public boolean updatePlayerV1(UpdatePlayerRequest updatePlayerRequest) {
+        return updatePlayerRepository(updatePlayerRequest);
     }
 
     @Override
     public Completable updatePlayerV2(UpdatePlayerRequest updatePlayerRequest) {
-        return null;
+        return updatePlayerRepositoryV2(updatePlayerRequest);
     }
 
     @Override
     public Completable deletePlayerV2(String id) {
-        return null;
+        return removePlayerInRepository(id);
     }
 
     private String savePlayer(CreatePlayerRequest createPlayerRequest){
@@ -85,11 +112,27 @@ public class PlayerServiceImpl implements PlayerService {
             return false;
         }
         else{
-            Player player = optionalPlayer.get();
-            player.setName(updatePlayerRequest.getName());
+            Player player = new Player();
+            BeanUtils.copyProperties(updatePlayerRequest, player);
             playerRepository.save(player);
             return true;
         }
+    }
+
+    private Completable updatePlayerRepositoryV2(UpdatePlayerRequest updatePlayerRequest){
+        return Completable.create(completableSubscriber -> {
+            Optional<Player> optionalPlayer = playerRepository.findById(updatePlayerRequest.getId());
+            if(optionalPlayer.isPresent()){
+                Player player = new Player();
+                BeanUtils.copyProperties(updatePlayerRequest, player);
+                playerRepository.save(player);
+                completableSubscriber.onCompleted();
+            }
+
+            else{
+                completableSubscriber.onError(new EntityNotFoundException());
+            }
+        });
     }
 
     private boolean removePlayerRepository(String id){
@@ -103,9 +146,39 @@ public class PlayerServiceImpl implements PlayerService {
         }
     }
 
+    private Completable removePlayerInRepository(String id){
+        return Completable.create(completableSubscriber -> {
+            Optional<Player> optionalPlayer = playerRepository.findById(id);
+            if(optionalPlayer.isPresent()) {
+                playerRepository.delete(optionalPlayer.get());
+                completableSubscriber.onCompleted();
+            }
+            else {
+                completableSubscriber.onError(new EntityNotFoundException());
+            }
+        });
+    }
+
     private PlayerResponse getPlayer(String id){
         Optional<Player> optionalPlayer = playerRepository.findById(id);
         return convertToPlayerResponse(optionalPlayer.get());
+    }
+
+    private Single<PlayerResponse> findPlayerDetails(String id) {
+        return Single.create(singleSubscriber -> {
+            Optional<Player> optionalPlayer = playerRepository.findById(id);
+            if(optionalPlayer.isPresent()) {
+                singleSubscriber.onSuccess(optionalPlayer.map(this::convertToPlayerResponse).get());
+            }
+            else{
+                singleSubscriber.onError(new EntityNotFoundException());
+            }
+        });
+    }
+
+
+    private List<Player> findAllPlayers(){
+        return playerRepository.findAll();
     }
 
 

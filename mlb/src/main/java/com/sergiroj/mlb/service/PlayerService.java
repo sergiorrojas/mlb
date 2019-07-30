@@ -19,6 +19,7 @@ public interface PlayerService {
     Single<List<PlayerResponse>> getAllPlayersV2();
     Observable<List<PlayerResponse>> getAllPlayersV3();
     Single<PlayerResponse> getPlayerDetailsV2(String id);
+    boolean updatePlayerV1(UpdatePlayerRequest updatePlayerRequest);
     Completable updatePlayerV2(UpdatePlayerRequest updatePlayerRequest);
     Completable deletePlayerV2(String id);
     
